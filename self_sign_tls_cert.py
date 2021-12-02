@@ -15,7 +15,7 @@ import os
 import datetime
 
 class SelfSignTLSCert():
-    ''' Create self signed TLS credentials
+    ''' Create self signed TLS certificate
 
         - certificate only valid for local testing.
 
@@ -30,8 +30,6 @@ class SelfSignTLSCert():
         - gen_cert: generate a TLS certificate
 
     parameters:
-        - save_cert: <bool>: user choice to save the certificate and private
-        key: default <False>
         - cert_dir: <str>: name of the core folder for storing certs and keys:
         default <certs>
         - cert_file_name: <str>: name of the certificate folder and file:
@@ -54,8 +52,8 @@ class SelfSignTLSCert():
     def __init__(self, cert_dir='certs'):
         self.cert_path = None
         self.cert_dir = cert_dir
-        self._save_cert = False
-        self._save_key = False
+        self._save_cert = None
+        self._save_key = None
         # self.save_cert = save_cert
 
     @property
@@ -92,7 +90,7 @@ class SelfSignTLSCert():
 
     @save_key.setter
     def save_key(self, value):
-        self._save_cert = value
+        self._save_key = value
         if value is True:
             self.cert_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                           self.cert_dir,
@@ -110,7 +108,6 @@ class SelfSignTLSCert():
             output:
                 date time string : <str>
 
-
         '''
         return(datetime.datetime.utcnow().strftime(format))
 
@@ -119,17 +116,21 @@ class SelfSignTLSCert():
 
         input:
             - key_name: <str>: the key file name:~ default: 'private_key'
+            - save_key: <bool>: user choice to save the private key: default
+            <False>
             - key_size: <int>: the bit-length of the key:~ default: 4096
 
         output:
             - a private key of length 'key_size'
+            - PEM encoded private key
 
 
 
         '''
         key = rsa.generate_private_key(public_exponent=65537, key_size=key_size)
+        print(save_key)
         self.save_key = save_key
-
+        print(self.save_key)
         if self.save_key is True:
             # unique file name for each key generated
             pk_file_name = os.path.join(self.cert_path, f'{key_name}{self.get_dt()}.key')
@@ -163,16 +164,20 @@ class SelfSignTLSCert():
             - organization_name: <str>: Name of the Orginization using the
             certificate: default: <org_name>
             - common_name: <str>: default: <common_name>
+            - save_cert: <bool>: user choice to save the certificate: default
+            <False>
+
 
         output:
             - a self signed TLS certificate and its private key (PEM encoded)
-                * optional: save certificate to file
         '''
         self.save_cert = save_cert
+        print(self.save_cert)
         if self.save_cert is True:
-
+            print("we are in the save_key=True pkey gen")
             pkey = self.gen_pkey(key_name=cert_file_name, save_key=True)
         else:
+            print("we are in the save_key=False pkey gen")
             pkey = self.gen_pkey(key_name=cert_file_name)
 
         common_name = socket.gethostname()

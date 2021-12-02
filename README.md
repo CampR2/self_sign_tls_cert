@@ -1,6 +1,6 @@
 
 # ***readme in progress***
-# self-signed-tls-certs (SSTC)
+# self-sign-tls-cert (SSTC)
 ## Intro: Generate self signed TLS certificate, Generate RSA key pairs, Optional to save either to disk, Documented
 
 - SSTC is designed to make it easy to create and save self signed TLS certs
@@ -15,9 +15,26 @@
         - UNSTABLE
     
 # Installing and Running
-SSTC is designed to be drop in. After download, drop the module into a folder that can be accessed from the application utilizing SSCT. Then, import the SelfSignedTLSCert object for use in said application.
+SSTC is designed to be a drop in package. After download, drop the package into
+an application's folder structure where it can be accessed by the necessary module.
+Then, import the self-sign-tls-cert package for use in said module.
+The \__init__.py file inside the self-sign-tls-cert package is designed to make
+it easy to import the SelfSignTLSCert object
+
+within your application ...
+```
+from .self-sign-tls-cert import SSTC
+```
+Depending on your file structure you may need to use an absolute path for
+the import instead of a relative path.
+E.g.,
+```
+from app_root_folder.sub_folder.self-sign-tls-cert import SSTC
+```
 
 Refer to the helper client server example scripts included in the repo
+
+If SSTC is run as a stand alone module it will
 
 # Program Execution
 import selfSignedTLSCerts object

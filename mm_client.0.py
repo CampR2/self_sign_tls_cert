@@ -5,20 +5,16 @@
 '''
 import asyncio
 import ssl
+import os
 
-'''
-
-
-'''
-
-
+root_dir = os.path.abspath(os.path.dirname(__file__)
 async def connect():
     sslcontext = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH,
                                             cafile=
-                                            ".\\client_server_certs\\server033142.crt")
+                                            os.path.join(root_dir, "client_server_certs", "server033142.crt")
     sslcontext.check_hostname = True
-    sslcontext.load_cert_chain(certfile=".\\client_server_certs\\client033142.crt",
-                               keyfile=".\\client_server_certs\\client033142.key")
+    sslcontext.load_cert_chain(certfile=os.path.join(root_dir, "client_server_certs", "client033142.crt"),
+                               keyfile=os.path.join(root_dir, "client_server_certs", "client033142.key")
 
     while True:
         reader, writer = await asyncio.open_connection("127.0.0.1",

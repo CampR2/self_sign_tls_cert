@@ -8,26 +8,12 @@
 import asyncio
 import ssl
 
-''' return an echo message to the client
-    parameter:
-    return:
-
-
-
-
-'''
-
 
 async def client_connected(reader, writer):
     print(writer.get_extra_info('socket'))
     message = input('What woud you like to say?: ')
     writer.write(bytes(message, 'utf-8'))
     writer.close()
-
-'''
-
-
-'''
 
 
 def main():
