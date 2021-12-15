@@ -127,3 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#tls cert and key
+*.crt
+*.key
+*.pem

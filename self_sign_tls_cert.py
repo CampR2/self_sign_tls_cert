@@ -32,7 +32,7 @@ class SelfSignTLSCert():
     parameters:
         - cert_dir: <str>: name of the core folder for storing certs and keys:
         default <certs>
-        - cert_file_name: <str>: name of the certificate folder and file:
+        - cert_name: <str>: name of the certificate folder and file:
         default: <client>
 
     properties:
@@ -50,11 +50,12 @@ class SelfSignTLSCert():
         app.
     '''
     def __init__(self, cert_dir='certs'):
-        self.cert_path = None
+        self.cert_path = ''
+        self.pk_path = ''
+        self.root_path = None
         self.cert_dir = cert_dir
         self._save_cert = None
         self._save_key = None
-        # self.save_cert = save_cert
 
     @property
     def save_cert(self):
@@ -71,11 +72,11 @@ class SelfSignTLSCert():
     def save_cert(self, value):
         self._save_cert = value
         if value is True:
-            self.cert_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+            self.root_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                           self.cert_dir,
                                           self.get_dt(format='%m%d%Y'))
-            if os.path.exists(self.cert_path) is False:
-                os.makedirs(self.cert_path)
+            if os.path.exists(self.root_path) is False:
+                os.makedirs(self.root_path)
 
     @property
     def save_key(self):
@@ -92,11 +93,11 @@ class SelfSignTLSCert():
     def save_key(self, value):
         self._save_key = value
         if value is True:
-            self.cert_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+            self.root_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                           self.cert_dir,
                                           self.get_dt(format='%m%d%Y'))
-            if os.path.exists(self.cert_path) is False:
-                os.makedirs(self.cert_path)
+            if os.path.exists(self.root_path) is False:
+                os.makedirs(self.root_path)
 
     def get_dt(self, format='%m%d%Y%H%M%S'):
         ''' return the current UTC date and time
@@ -133,15 +134,15 @@ class SelfSignTLSCert():
         print(self.save_key)
         if self.save_key is True:
             # unique file name for each key generated
-            pk_file_name = os.path.join(self.cert_path, f'{key_name}{self.get_dt()}.key')
+            self.pk_path = os.path.join(self.root_path, f'{key_name}{self.get_dt()}.key')
             # save key in the same folder as this module
-            with open(pk_file_name, 'wb') as pk_file:
+            with open(self.pk_path, 'wb') as pk_file:
                 pk_file.write(key.private_bytes(
                         encoding=serialization.Encoding.PEM,
                         format=serialization.PrivateFormat.PKCS8,
                         encryption_algorithm=serialization.NoEncryption()))
 
-        return key, key.private_bytes(encoding=serialization.Encoding.PEM,
+        return key, self.pk_path, key.private_bytes(encoding=serialization.Encoding.PEM,
                                  format=serialization.PrivateFormat.PKCS8,
                                  encryption_algorithm=serialization.NoEncryption())
 
@@ -151,8 +152,8 @@ class SelfSignTLSCert():
                  locality_name='Los Angeles',
                  organization_name='org_name',
                  common_name='common_name',
-                 cert_file_name='client',
-                 save_cert=False):
+                 cert_name='client',
+                 save_cert=True):
 
         ''' generate a certificate use in a TLS connection
 
@@ -175,10 +176,10 @@ class SelfSignTLSCert():
         print(self.save_cert)
         if self.save_cert is True:
             print("we are in the save_key=True pkey gen")
-            pkey = self.gen_pkey(key_name=cert_file_name, save_key=True)
+            pkey = self.gen_pkey(key_name=cert_name, save_key=True)
         else:
             print("we are in the save_key=False pkey gen")
-            pkey = self.gen_pkey(key_name=cert_file_name)
+            pkey = self.gen_pkey(key_name=cert_name)
 
         common_name = socket.gethostname()
 
@@ -216,17 +217,16 @@ class SelfSignTLSCert():
                                                      ]), critical=False,
         ).sign(pkey[0], hashes.SHA256())
         if self.save_cert is True:
-            cert_path = os.path.join(self.cert_path, f'{cert_file_name}{self.get_dt()}.crt')
-            with open(cert_path, "wb") as f:
+            self.cert_path = os.path.join(self.root_path, f'{cert_name}{self.get_dt()}.crt')
+            with open(self.cert_path, "wb") as f:
                 f.write(cert.public_bytes(serialization.Encoding.PEM))
 
-        return (cert.public_bytes(serialization.Encoding.PEM),
-                pkey[1])
+        return self.cert_path, cert.public_bytes(serialization.Encoding.PEM), pkey[1], pkey[2]
 
 def main():
     ''' create and save a pair of self signed client/server TLS certificates '''
     client_cert, client_pkey = SelfSignTLSCert().gen_cert(save_cert=True)
-    server_cert, server_pkey = SelfSignTLSCert().gen_cert(cert_file_name='server', save_cert=True)
+    server_cert, server_pkey = SelfSignTLSCert().gen_cert(cert_name='server', save_cert=True)
 
 
 if __name__ == '__main__':
